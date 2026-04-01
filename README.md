@@ -134,5 +134,4 @@ For verification, the process runs for two tokens and intersects the candidate s
 ## License
 
 MIT
-# wallet-tracker
 # FomoHoldersTracker
