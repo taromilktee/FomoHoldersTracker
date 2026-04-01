@@ -1222,6 +1222,10 @@ def build_fomo_user_embeds(summary: dict) -> list[discord.Embed]:
     evm = summary.get("evm_wallet")
     realized = summary.get("totalRealizedPnlUsd", 0)
     unrealized = summary.get("totalUnrealizedPnlUsd", 0)
+    pnl_label = summary.get("pnl_label", "Realized PnL")
+    pnl24h = summary.get("pnl24h")
+    pnl7d = summary.get("pnl7d")
+    pnl30d = summary.get("pnl30d")
     pfp = summary.get("profilePictureLink")
     display = summary.get("displayName") or summary.get("userHandle") or user_id[:12]
     handle = summary.get("userHandle")
@@ -1252,8 +1256,14 @@ def build_fomo_user_embeds(summary: dict) -> list[discord.Embed]:
     if pfp:
         profile_embed.set_thumbnail(url=pfp)
 
-    profile_embed.add_field(name="Realized PnL", value=f"**${realized:,.2f}**", inline=True)
+    profile_embed.add_field(name=pnl_label, value=f"**${realized:,.2f}**", inline=True)
     profile_embed.add_field(name="Unrealized PnL", value=f"**${unrealized:,.2f}**", inline=True)
+    if pnl24h is not None:
+        profile_embed.add_field(name="24h PnL", value=f"**${pnl24h:,.2f}**", inline=True)
+    if pnl7d is not None:
+        profile_embed.add_field(name="7d PnL", value=f"**${pnl7d:,.2f}**", inline=True)
+    if pnl30d is not None:
+        profile_embed.add_field(name="30d PnL", value=f"**${pnl30d:,.2f}**", inline=True)
     profile_embed.add_field(
         name="Trades",
         value=f"{summary.get('active_count', 0)} active / {summary.get('closed_count', 0)} closed",
