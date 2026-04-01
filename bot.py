@@ -1235,9 +1235,9 @@ def build_fomo_user_embeds(summary: dict) -> list[discord.Embed]:
     if description:
         desc_parts.append(f"*{description}*")
     if sol:
-        desc_parts.append(f"**Solana:** [{sol[:8]}...{sol[-4:]}]({_wallet_explorer_url(sol, FOMO_NETWORK_IDS['solana'])})")
+        desc_parts.append(f"**Solana:** [Solscan]({_wallet_explorer_url(sol, FOMO_NETWORK_IDS['solana'])})\n`{sol}`")
     if evm:
-        desc_parts.append(f"**EVM:** [{evm[:8]}...{evm[-4:]}]({_wallet_explorer_url(evm, FOMO_NETWORK_IDS['base'])})")
+        desc_parts.append(f"**EVM:** [Explorer]({_wallet_explorer_url(evm, FOMO_NETWORK_IDS['base'])})\n`{evm}`")
     if handle:
         desc_parts.append(f"**Twitter:** [@{handle}](https://x.com/{handle})")
     desc_parts.append(f"**Followers:** {followers:,} | **Following:** {following:,}")
@@ -1344,10 +1344,10 @@ def build_fomo_holders_embeds(
         else:
             name_part = f"**{display}**"
 
-        # Wallet explorer link
+        # Wallet explorer link + full address for copy-paste
         if wallet:
             explorer_url = _wallet_explorer_url(wallet, net)
-            wallet_part = f"[{wallet[:6]}...{wallet[-4:]}]({explorer_url})"
+            wallet_part = f"[Explorer]({explorer_url})\n`{wallet}`"
         else:
             wallet_part = "*no wallet*"
 

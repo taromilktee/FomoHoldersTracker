@@ -378,21 +378,29 @@ class FomoClient:
         active, closed = self.get_all_user_trades(user_id, max_pages=5)
         all_trades = [t["trade"] for t in active + closed if "trade" in t]
 
-        # Prefer wallet addresses from profile (always accurate) over trade data
-        solana_wallet: str | None = (profile or {}).get("address")
-        evm_wallet: str | None = (profile or {}).get("evmAddress")
+        # Derive wallet addresses from actual trade data first — the profile
+        # address field is the linked/registered wallet which may be empty or
+        # different from the wallet the user actually trades from.
+        solana_wallet: str | None = None
+        evm_wallet: str | None = None
 
         total_realized = 0.0
         total_unrealized = 0.0
         for trade in all_trades:
             addr = trade.get("userAddress", "")
             net = trade.get("networkId")
-            if not solana_wallet and net == FOMO_NETWORK_IDS["solana"]:
+            if not solana_wallet and addr and net == FOMO_NETWORK_IDS["solana"]:
                 solana_wallet = addr
-            elif not evm_wallet and net in (FOMO_NETWORK_IDS["base"], FOMO_NETWORK_IDS["bsc"]):
+            elif not evm_wallet and addr and net in (FOMO_NETWORK_IDS["base"], FOMO_NETWORK_IDS["bsc"]):
                 evm_wallet = addr
             total_realized += float(trade.get("realizedPnlUsd") or 0)
             total_unrealized += float(trade.get("unrealizedPnlUsd") or 0)
+
+        # Fall back to profile addresses if not found in trades
+        if not solana_wallet:
+            solana_wallet = (profile or {}).get("address")
+        if not evm_wallet:
+            evm_wallet = (profile or {}).get("evmAddress")
 
         # Top holdings deduped by symbol, sorted by cost basis
         seen_syms: set[str] = set()
