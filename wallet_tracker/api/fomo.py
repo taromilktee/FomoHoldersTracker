@@ -515,16 +515,18 @@ class FomoClient:
         token_address: str,
         network_id: int,
         top_n: int = 10,
-    ) -> list[dict[str, Any]]:
+    ) -> tuple[list[dict[str, Any]], str | None]:
         """
         Get top N unique traders from a token's feed, enriched with their
         per-token PnL from /trades.
 
-        Each result has:
+        Returns (holders, token_image_url).
+
+        Each holder has:
             userId, displayName, userHandle, profilePictureLink,
             solana_wallet, evm_wallet, networkId,
             realizedPnlUsd, unrealizedPnlUsd, totalCostBasis,
-            avgEntryPrice, avgExitPrice, stillHolding, usdAmount
+            stillHolding, usdAmount
         """
         # Collect unique traders from feed (buy events first for entry prices)
         seen: dict[str, dict] = {}
@@ -543,9 +545,10 @@ class FomoClient:
                 break
 
         if not seen:
-            return []
+            return [], None
 
         # Enrich each trader with their per-token trade data
+        token_image_url: str | None = None
         enriched = []
         for uid, feed_item in list(seen.items())[:top_n * 3]:
             try:
@@ -557,6 +560,10 @@ class FomoClient:
                 [t["trade"] for t in trade_data.get("activeTrades", []) if "trade" in t]
                 + [t["trade"] for t in trade_data.get("closedTrades", []) if "trade" in t]
             )
+
+            # Grab token image from first trade that has it
+            if not token_image_url and all_token_trades:
+                token_image_url = all_token_trades[0].get("tokenMetadata", {}).get("imageLargeUrl")
 
             # Aggregate PnL across all positions for this token
             realized = sum(float(t.get("realizedPnlUsd") or 0) for t in all_token_trades)
@@ -593,7 +600,7 @@ class FomoClient:
 
         # Sort by realized PnL descending, return top N
         enriched.sort(key=lambda x: x["realizedPnlUsd"], reverse=True)
-        return enriched[:top_n]
+        return enriched[:top_n], token_image_url
 
     # ------------------------------------------------------------------
     # Leaderboard
