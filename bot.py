@@ -1331,7 +1331,7 @@ def build_fomo_holders_embeds(
 
     embed = discord.Embed(
         title=f"🏆 Top Fomo Holders for ${sym}",
-        description=f"Token: [{sym}]({ds_url}) `{token_address[:6]}..{token_address[-4:]}`\n\n" + ("\n".join(lines) if lines else "No traders found."),
+        description=f"Token: [{sym}]({ds_url}) `{token_address}`\n\n" + ("\n".join(lines) if lines else "No traders found."),
         color=discord.Color.og_blurple(),
         url=ds_url,
     )
